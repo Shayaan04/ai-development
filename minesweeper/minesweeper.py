@@ -83,3 +83,22 @@ class Minesweeper:
             self.game_over = True
             self.won = True
         return True
+
+    def get_visible_board(self):
+        """ Return a board of visible information so computer or AI can process """
+        matrix = []
+        #iterate through all the cell. if cell is visible, add to the matrix
+        for row in range(self.rows):
+            visible_row = []
+            for col in range(self.cols):
+                cell = (col, row)
+                if cell in self.revealed:
+                    value = self.adjacent_mines[cell]
+                elif cell in self.flags:
+                    value = "flagged"
+                else:
+                    value = "covered"
+                visible_row.append(value)
+            matrix.append(visible_row)
+
+        return matrix
