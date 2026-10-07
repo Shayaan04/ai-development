@@ -10,19 +10,31 @@ Date Created: 09/12/2026
 Date last Edited: 10/06/2026
 """
 import pygame
-from minesweeper import Minesweeper
+from controller import GameController
 
 class Board:
-    def __init__(self, rows, cols, num_mines=10):
-        self.rows = rows
-        self.cols = cols
+    def __init__(self, controller: GameController):
+        self.controller = controller
         self.tile_size = 50
 
         self.x = 25
         self.y = 25
 
-        self.game = Minesweeper(num_mines, rows, cols)  # Initialize the Minesweeper game with 10 mines
-        self.font = pygame.font.Font("assets/ThaleahFat.ttf", 32)  # font for drawing adjacent-mine numbers
+        self.font = pygame.font.Font("assets/ThaleahFat.ttf", 32)
+        #Load in asset files
+        self.loadAssets()
+
+    @property
+    def game(self):
+        return self.controller.game
+
+    @property
+    def rows(self):
+        return self.game.rows
+
+    @property
+    def cols(self):
+        return self.game.cols
 
     def handle_click(self, mouse_x, mouse_y):
         #handle left clicks to reveal cell
@@ -31,10 +43,7 @@ class Board:
         col = (mouse_x - self.x) // self.tile_size
         row = (mouse_y - self.y) // self.tile_size
 
-        result = self.game.apply_action("reveal", col, row)
-        if result == "lost":
-            print("Game Over! You clicked on a mine.")
-        return result
+        return self.controller.submit_action("human", "reveal", col, row)
 
     def place_flag(self, mouse_x, mouse_y):
         # convert mouse click position to board coordinates
@@ -43,9 +52,9 @@ class Board:
 
         # Human right-click toggles; an AI "flag" request only places a flag.
         action = "unflag" if (col, row) in self.game.flags else "flag"
-        return self.game.apply_action(action, col, row)
+        return self.controller.submit_action("human", action, col, row)
 
-    
+
     #Import Assets
     def loadAssets(self):
 
@@ -54,10 +63,10 @@ class Board:
         self.events = {}
 
         # List of event sprite names
-        events = {"unknown" : "TileUnknown", 
-                  "empty": "TileEmpty", 
-                  "flag": "TileFlag", 
-                  "mine": "TileMine", 
+        events = {"unknown" : "TileUnknown",
+                  "empty": "TileEmpty",
+                  "flag": "TileFlag",
+                  "mine": "TileMine",
                   "explosion": "TileExploded"}
         #List of numbered tiles
 
@@ -67,7 +76,7 @@ class Board:
         #Copilot assisted syntax
         for i in tile_range:
             self.tiles[i] = pygame.image.load(f"assets/Tile{i}.png").convert_alpha()
-            self.tiles[i] = pygame.transform.scale(self.tiles[i], (self.tile_size, self.tile_size))  
+            self.tiles[i] = pygame.transform.scale(self.tiles[i], (self.tile_size, self.tile_size))
 
         # Load and resize event sprites
         for event, i in events.items():
@@ -75,14 +84,11 @@ class Board:
             self.events[event] = pygame.transform.scale(self.events[event], (self.tile_size, self.tile_size))
 
     def draw(self, screen):
-        #Load in asset files
-        self.loadAssets()
-
         #Copilot assisted for drawing details
         # Draw column labels A-J
         for col in range(self.cols):
             label = chr(ord('A') + col) #Label to give is A's unicode plus column number
-            text = self.font.render(label, True, "black")   
+            text = self.font.render(label, True, "black")
             text_rect = text.get_rect(
                 center=(
                     self.x + col * self.tile_size + self.tile_size // 2,
@@ -103,7 +109,7 @@ class Board:
             )
             screen.blit(text, text_rect)
 
-        
+
 
         #Draw board onto the screen
         for row in range(self.rows):
@@ -139,14 +145,3 @@ class Board:
                         text = self.font.render(str(count), True, "black") #Draw the number of mines to middle of tile
                         text_rect = text.get_rect(center=(x + self.tile_size // 2, y + self.tile_size // 2))
                         screen.blit(text, text_rect)
-
-                #Draw Remaining Flags
-                #Copilot assisted syntax
-                flags = self.game.num_mines - len(self.game.flags)
-                flag_text = self.font.render(f"Flags: {flags}", True, "black") 
-                screen.blit(flag_text, (25, 550))
-
-                #Draw Remaining Mines Count
-                mines = self.game.num_mines - flags
-                mine_text = self.font.render(f"Mines: {mines}", True, "black")
-                screen.blit(mine_text, (25, 600))
