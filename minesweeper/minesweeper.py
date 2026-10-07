@@ -5,8 +5,9 @@ Inputs: None
 Outputs: None
 External sources: VScode Copilot
 Authors: Drew Franke, Alex Lanter, Mo Osby
+Maintenance: Anh Hoang
 Date Created: 09/13/2026
-Date Last Edited: 09/20/2026
+Date Last Edited: 10/06/2026
 """
 import random
 

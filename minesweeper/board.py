@@ -5,8 +5,9 @@ Inputs: None
 Outputs: None
 External sources: pygame documentation for reference, VScode Copilot
 Authors: Mo Osby, Drew Franke, Alex Lanter, Vrishank Kulkarni, Davina Love
+Maintenance: Anh Hoang
 Date Created: 09/12/2026
-Date last Edited: 09/20/2026
+Date last Edited: 10/06/2026
 """
 import pygame
 from minesweeper import Minesweeper
@@ -34,12 +35,17 @@ class Board:
         if col < 0 or col >= self.cols or row < 0 or row >= self.rows:
             return
 
-        #on first click, place mines then reveal
+        # ignore invalid reveals before using first-reveal protection.
+        if self.game.game_over:
+            return
+        cell = (col, row)
+        if cell in self.game.flags or cell in self.game.revealed:
+            return
+
+        # Place mines only for the first valid reveal.
         if self.game.first_click:
             self.game.place_mines(col, row)
 
-        if self.game.game_over:
-            return
         self.game.reveal_cell(col, row)
 
         if self.game.game_over and not self.game.won:
