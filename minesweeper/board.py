@@ -31,49 +31,19 @@ class Board:
         col = (mouse_x - self.x) // self.tile_size
         row = (mouse_y - self.y) // self.tile_size
 
-        #ignore clicks outside the board
-        if col < 0 or col >= self.cols or row < 0 or row >= self.rows:
-            return
-
-        # ignore invalid reveals before using first-reveal protection.
-        if self.game.game_over:
-            return
-        cell = (col, row)
-        if cell in self.game.flags or cell in self.game.revealed:
-            return
-
-        # Place mines only for the first valid reveal.
-        if self.game.first_click:
-            self.game.place_mines(col, row)
-
-        self.game.reveal_cell(col, row)
-
-        if self.game.game_over and not self.game.won:
+        result = self.game.apply_action("reveal", col, row)
+        if result == "lost":
             print("Game Over! You clicked on a mine.")
+        return result
 
     def place_flag(self, mouse_x, mouse_y):
         # convert mouse click position to board coordinates
         col = (mouse_x - self.x) // self.tile_size
         row = (mouse_y - self.y) // self.tile_size
 
-        # ignore clicks outside the board
-        if col < 0 or col >= self.cols or row < 0 or row >= self.rows:
-            return
-
-        cell = (col, row)
-
-        # do not place flags on revealed cells
-        if cell in self.game.revealed or self.game.game_over:
-            return
-
-        # if the cell already has a flag, remove it
-        if cell in self.game.flags:
-            self.game.flags.remove(cell)
-
-        # otherwise, place a flag if there are flags available
-        # copilot assisted line finishing
-        elif len(self.game.flags) < self.game.num_mines:
-            self.game.flags.add(cell)
+        # Human right-click toggles; an AI "flag" request only places a flag.
+        action = "unflag" if (col, row) in self.game.flags else "flag"
+        return self.game.apply_action(action, col, row)
 
     
     #Import Assets
